@@ -103,9 +103,10 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer options)
 	ObClient *focused = NULL;
 
 	cnum = enum_clients(&focused, &new_y);
-	ob_debug(">>> %d %d\n", cnum, new_y);
-	if (cnum < 2)
+	if (cnum < 2) {
+		client_maximize(focused, TRUE, 0);
 		return 0;
+	}
 
 	new_width = screen_sz.width / cnum;
 	cnum = 0;
@@ -150,8 +151,10 @@ static gboolean run_focus_tile_vert_func(ObActionsData *data, gpointer options)
 	if (!focused)
 		return 0;
 
-	if (cnum < 2)
+	if (cnum < 2) {
+		client_maximize(focused, TRUE, 0);
 		return 0;
+	}
 
 	new_width = screen_sz.width / 2;
 	cnum--;
