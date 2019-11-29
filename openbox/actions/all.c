@@ -41,4 +41,6 @@ void action_all_startup(void)
     action_focustobottom_startup();
     /* 3.4-compatibility */
     action_shadelowerraise_startup();
+
+    action_tiles_startup();
 }

@@ -507,6 +507,11 @@ void screen_resize(void)
     }
 }
 
+Size get_screen_physical_size(void)
+{
+	return screen_physical_size;
+}
+
 void screen_set_num_desktops(guint num)
 {
     gulong *viewport;

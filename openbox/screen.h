@@ -187,4 +187,6 @@ gboolean screen_compare_desktops(guint a, guint b);
  * aligning to right/bottom edges of the area. */
 void screen_apply_gravity_point(gint *x, gint *y, gint width, gint height,
                                 const GravityPoint *position, const Rect *area);
+
+Size get_screen_physical_size(void);
 #endif
