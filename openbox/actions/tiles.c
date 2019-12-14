@@ -4,6 +4,7 @@
 #include "openbox/frame.h"
 #include "openbox/config.h"
 #include "openbox/debug.h"
+#include "openbox/openbox.h"
 
 enum {
     CURRENT_MONITOR = -1,
@@ -48,6 +49,13 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 	return o;
 }
 
+static guint adjusted_height(ObClient *client, guint h)
+{
+	if (client->undecorated)
+		return h;
+	return h - ob_rr_theme->title_height;
+}
+
 static guint enum_clients(ObClient **focused, guint *new_y)
 {
 	GList *it;
@@ -70,17 +78,14 @@ static guint enum_clients(ObClient **focused, guint *new_y)
 		if (client_focused(client))
 			*focused = client;
 
-		ob_debug("enum %s\n", client->name);
-
 		cnt++;
 	}
 	return cnt;
 }
 
-static gboolean resize_tile(ObClient *client, guint x, guint y, guint w, guint h)
+static gboolean resize_tile(ObClient *client, guint x, guint y,
+			    guint w, guint h)
 {
-	ob_debug("attempt to resize %s\n", client->name);
-
 	if (client->desktop != screen_desktop)
 		return 0;
 	if (client->obwin.type != OB_WINDOW_CLASS_CLIENT)
@@ -88,6 +93,7 @@ static gboolean resize_tile(ObClient *client, guint x, guint y, guint w, guint h
 	if (client->iconic)
 		return 0;
 
+	h = adjusted_height(client, h);
 	client_maximize(client, FALSE, 1);
 	client_move_resize(client, x, y, w, h);
 	return 1;
@@ -124,8 +130,6 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer options)
 		client = it->data;
 		if (client == focused)
 			continue;
-
-		ob_debug("resize %s\n", client->name);
 
 		if (resize_tile(client,
 				cnum * new_width, new_y,
