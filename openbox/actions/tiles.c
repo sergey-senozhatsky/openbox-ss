@@ -14,7 +14,7 @@ static void free_func(gpointer o);
 static gpointer setup_tiles_func(xmlNodePtr node);
 static gboolean run_split_tiles_vert_func(ObActionsData *data,
 					  gpointer options);
-static gboolean run_focus_tile_vert_func(ObActionsData *data,
+static gboolean run_focus_tile_func(ObActionsData *data,
 					  gpointer options);
 static gboolean run_split_tiles_rows_func(ObActionsData *data,
 					  gpointer options);
@@ -23,8 +23,8 @@ void action_tiles_startup(void)
 {
 	actions_register("SplitTilesVertically", setup_tiles_func,
 			free_func, run_split_tiles_vert_func);
-	actions_register("FocusTileVerrtically", setup_tiles_func,
-			free_func, run_focus_tile_vert_func);
+	actions_register("FocusTile", setup_tiles_func,
+			free_func, run_focus_tile_func);
 	actions_register("SplitTilesRows", setup_tiles_func,
 			free_func, run_split_tiles_rows_func);
 }
@@ -200,7 +200,7 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer options)
 	return 0;
 }
 
-static gboolean run_focus_tile_vert_func(ObActionsData *data, gpointer options)
+static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 {
 	GList *it;
 	int num_client = 0;
