@@ -66,9 +66,8 @@ static guint enum_clients(ObClient **focused)
 	guint cnt = 0;
 
 	for (it = client_list; it; it = g_list_next(it)) {
-		ObClient *client;
+		ObClient *client = it->data;
 
-		client = it->data;
 		if (client->desktop != screen_desktop)
 			continue;
 		if (client->obwin.type != OB_WINDOW_CLASS_CLIENT)
@@ -209,9 +208,8 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 		    screen_rect->height);
 
 	for (it = client_list; it; it = g_list_next(it)) {
-		ObClient *client;
+		ObClient *client = it->data;
 
-		client = it->data;
 		if (client == focused)
 			continue;
 
@@ -260,9 +258,8 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 		    screen_rect->height);
 
 	for (it = client_list; it; it = g_list_next(it)) {
-		ObClient *client;
+		ObClient *client = it->data;
 
-		client = it->data;
 		if (client == focused)
 			continue;
 
