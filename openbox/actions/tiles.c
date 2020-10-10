@@ -61,6 +61,7 @@ static guint adjusted_height(ObClient *client, guint h)
 
 static guint enum_clients(ObClient **focused)
 {
+	ObClient *last;
 	GList *it;
 	guint cnt = 0;
 
@@ -74,30 +75,16 @@ static guint enum_clients(ObClient **focused)
 			continue;
 		if (client->iconic)
 			continue;
+		last = client;
 		if (client_focused(client))
 			*focused = client;
 		cnt++;
 	}
+
+	if (*focused == NULL)
+		*focused = last;
+
 	return cnt;
-}
-
-static ObClient *pick_first_client(void)
-{
-	GList *it;
-
-	for (it = client_list; it; it = g_list_next(it)) {
-		ObClient *client;
-
-		client = it->data;
-		if (client->desktop != screen_desktop)
-			continue;
-		if (client->obwin.type != OB_WINDOW_CLASS_CLIENT)
-			continue;
-		if (client->iconic)
-			continue;
-		return client;
-	}
-	return NULL;
 }
 
 static gboolean resize_tile(ObClient *client, guint x, guint y,
@@ -135,11 +122,8 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 		return 0;
 
 	num_client = enum_clients(&focused);
-	if (!focused) {
-		focused = pick_first_client();
-		if (!focused)
-			return 0;
-	}
+	if (!focused)
+		return 0;
 
 	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
@@ -201,11 +185,9 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	ObClient *focused = NULL;
 
 	num_client = enum_clients(&focused);
-	if (!focused) {
-		focused = pick_first_client();
-		if (!focused)
-			return 0;
-	}
+	if (!focused)
+		return 0;
+
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
@@ -250,11 +232,9 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 	ObClient *focused = NULL;
 
 	num_client = enum_clients(&focused);
-	if (!focused) {
-		focused = pick_first_client();
-		if (!focused)
-			return 0;
-	}
+	if (!focused)
+		return 0;
+
 	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
