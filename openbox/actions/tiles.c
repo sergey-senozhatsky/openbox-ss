@@ -14,7 +14,7 @@ enum {
 };
 
 #define OPTS_FLAG_NONE		(0)
-#define OPTS_FLAG_FOCUS		(1 << 0)
+#define OPTS_FLAG_MAXIMIZE_FOCUSED		(1 << 0)
 
 typedef struct {
 	guint	num_rows;
@@ -54,11 +54,11 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 		o->num_rows = strtol(s, &s, 10);
 	}
 
-	if ((n = obt_xml_find_node(node, "focus"))) {
+	if ((n = obt_xml_find_node(node, "maximize_focused"))) {
 		gchar *s = obt_xml_node_string(n);
 
 		if (strcmp(s, "true") == 0)
-			o->flags |= OPTS_FLAG_FOCUS;
+			o->flags |= OPTS_FLAG_MAXIMIZE_FOCUSED;
 	}
 	return o;
 }
@@ -144,7 +144,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 				  client_monitor(focused),
 				  NULL);
 
-	if (o->flags & OPTS_FLAG_FOCUS) {
+	if (o->flags & OPTS_FLAG_MAXIMIZE_FOCUSED) {
 		new_height = screen_rect->height / o->num_rows;
 		num_client--;
 		clients_per_row = num_client / (o->num_rows - 1);
@@ -225,7 +225,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 				  client_monitor(focused),
 				  NULL);
 
-	if (o->flags & OPTS_FLAG_FOCUS) {
+	if (o->flags & OPTS_FLAG_MAXIMIZE_FOCUSED) {
 		new_width = screen_rect->width / 2;
 
 		resize_tile(focused,
