@@ -125,11 +125,14 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	if (!focused)
 		return 0;
 
-	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
 	}
+
+	screen_rect = screen_area(focused->desktop,
+				  client_monitor(focused),
+				  NULL);
 
 	new_height = screen_rect->height / o->num_rows;
 	num_client--;
@@ -200,7 +203,8 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	num_client = 1;
 
 	resize_tile(focused,
-		    screen_rect->x, screen_rect->y,
+		    screen_rect->x,
+		    screen_rect->y,
 		    new_width,
 		    screen_rect->height);
 
@@ -235,18 +239,23 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 	if (!focused)
 		return 0;
 
-	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
 	}
+
+	screen_rect = screen_area(focused->desktop,
+				  client_monitor(focused),
+				  NULL);
 
 	new_width = screen_rect->width / 2;
 	num_client--;
 	new_width /= num_client;
 	num_client = 0;
 
-	resize_tile(focused, screen_rect->x, screen_rect->y,
+	resize_tile(focused,
+		    screen_rect->x,
+		    screen_rect->y,
 		    screen_rect->width / 2,
 		    screen_rect->height);
 
