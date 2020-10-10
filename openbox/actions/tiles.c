@@ -13,19 +13,23 @@ enum {
     PREV_MONITOR = -4
 };
 
+#define OPTS_FLAG_NONE		(0)
+#define OPTS_FLAG_FOCUS		(1 << 0)
+
 typedef struct {
 	guint	num_rows;
 	gint	monitor;
+	gint	flags;
 } Options;
 
 static void free_func(gpointer o);
 static gpointer setup_tiles_func(xmlNodePtr node);
 static gboolean run_split_tiles_cols_func(ObActionsData *data,
-					  gpointer options);
+					  gpointer opts);
 static gboolean run_focus_tile_func(ObActionsData *data,
-					  gpointer options);
+					  gpointer opts);
 static gboolean run_split_tiles_rows_func(ObActionsData *data,
-					  gpointer options);
+					  gpointer opts);
 
 void action_tiles_startup(void)
 {
@@ -43,12 +47,21 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 	Options *o;
 
 	o = g_slice_new0(Options);
+	o->flags = OPTS_FLAG_NONE;
+	o->monitor = CURRENT_MONITOR;
+
 	if ((n = obt_xml_find_node(node, "rows"))) {
 		gchar *s = obt_xml_node_string(n);
 
 		o->num_rows = strtol(s, &s, 10);
 	}
-	o->monitor = CURRENT_MONITOR;
+
+	if ((n = obt_xml_find_node(node, "focus"))) {
+		gchar *s = obt_xml_node_string(n);
+
+		if (strcmp(s, "true") == 0)
+			o->flags |= OPTS_FLAG_FOCUS;
+	}
 	return o;
 }
 
@@ -104,9 +117,9 @@ static gboolean resize_tile(ObClient *client, guint x, guint y,
 	return 1;
 }
 
-static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
+static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 {
-	Options *o = options;
+	Options *o = opts;
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
@@ -115,7 +128,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	ObClient *focused = NULL;
 	guint clients_per_row;
 	guint clients_last_row;
-	guint current_row = 1;
+	guint current_row;
 
 	if (!o->num_rows || o->num_rows < 2)
 		return 0;
@@ -133,20 +146,33 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 				  client_monitor(focused),
 				  NULL);
 
-	new_height = screen_rect->height / o->num_rows;
-	num_client--;
-	clients_per_row = num_client / (o->num_rows - 1);
-	if (!clients_per_row)
-		clients_per_row = 1;
-	clients_last_row = clients_per_row;
-	if (num_client % (o->num_rows - 1))
-		clients_last_row += 1;
+	if (o->flags & OPTS_FLAG_FOCUS) {
+		new_height = screen_rect->height / o->num_rows;
+		num_client--;
+		clients_per_row = num_client / (o->num_rows - 1);
+		if (!clients_per_row)
+			clients_per_row = 1;
+		clients_last_row = clients_per_row;
+		if (num_client % (o->num_rows - 1))
+			clients_last_row += 1;
 
-	resize_tile(focused,
-		    screen_rect->x,
-		    screen_rect->y,
-		    screen_rect->width,
-		    new_height);
+		resize_tile(focused,
+			    screen_rect->x,
+			    screen_rect->y,
+			    screen_rect->width,
+			    new_height);
+		current_row = 1;
+	} else {
+		new_height = screen_rect->height / o->num_rows;
+		clients_per_row = num_client / o->num_rows;
+		if (!clients_per_row)
+			clients_per_row = 1;
+		clients_last_row = clients_per_row;
+		if (num_client % o->num_rows)
+			clients_last_row += 1;
+		focused = NULL;
+		current_row = 0;
+	}
 
 	num_client = 0;
 	for (it = client_list; it; it = g_list_next(it)) {
@@ -178,8 +204,9 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	return 0;
 }
 
-static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
+static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 {
+	Options *o = opts;
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
@@ -199,13 +226,16 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	screen_rect = screen_area(focused->desktop,
 				  client_monitor(focused),
 				  NULL);
-	num_client = 1;
 
-	resize_tile(focused,
-		    screen_rect->x,
-		    screen_rect->y,
-		    new_width,
-		    screen_rect->height);
+	if (o->flags & OPTS_FLAG_FOCUS) {
+		num_client = 1;
+
+		resize_tile(focused,
+			    screen_rect->x,
+			    screen_rect->y,
+			    new_width,
+			    screen_rect->height);
+	}
 
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client = it->data;
@@ -225,7 +255,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	return 0;
 }
 
-static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
+static gboolean run_focus_tile_func(ObActionsData *data, gpointer opts)
 {
 	GList *it;
 	int num_client = 0;
