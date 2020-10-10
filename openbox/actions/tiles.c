@@ -102,7 +102,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	int num_client = 0;
 	int new_width = 0;
 	int new_height = 0;
-	Size screen_sz = get_screen_physical_size();
+	Rect *screen_rect = screen_physical_area_active();
 	int new_y = INT_MAX;
 	ObClient *focused = NULL;
 	guint clients_per_row;
@@ -118,8 +118,8 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 		return 0;
 	}
 
-	screen_sz.height -= new_y;
-	new_height = screen_sz.height / o->num_rows;
+	screen_rect->height -= new_y;
+	new_height = screen_rect->height / o->num_rows;
 	clients_per_row = num_client / o->num_rows;
 	if (!clients_per_row)
 		clients_per_row = 1;
@@ -132,10 +132,10 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 		ObClient *client;
 
 		if (current_row == o->num_rows - 1) {
-			new_width = screen_sz.width / clients_last_row;
+			new_width = screen_rect->width / clients_last_row;
 			clients_per_row = clients_last_row;
 		} else {
-			new_width = screen_sz.width / clients_per_row;
+			new_width = screen_rect->width / clients_per_row;
 		}
 
 		client = it->data;
@@ -160,7 +160,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
-	Size screen_sz = get_screen_physical_size();
+	Rect *screen_rect = screen_physical_area_active();
 	int new_y = INT_MAX;
 	ObClient *focused = NULL;
 
@@ -170,14 +170,14 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 		return 0;
 	}
 
-	screen_sz.height -= new_y;
-	new_width = screen_sz.width / num_client;
+	screen_rect->height -= new_y;
+	new_width = screen_rect->width / num_client;
 	num_client = 0;
 	if (focused) {
 		resize_tile(focused,
 			    0, new_y,
 			    new_width,
-			    screen_sz.height - new_y);
+			    screen_rect->height - new_y);
 		num_client = 1;
 	}
 
@@ -192,7 +192,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 				num_client * new_width,
 				new_y,
 				new_width,
-				screen_sz.height)) {
+				screen_rect->height)) {
 			num_client++;
 		}
 	}
@@ -205,7 +205,7 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
-	Size screen_sz = get_screen_physical_size();
+	Rect *screen_rect = screen_physical_area_active();
 	int new_y = INT_MAX;
 	ObClient *focused = NULL;
 
@@ -218,15 +218,15 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 		return 0;
 	}
 
-	screen_sz.height -= new_y;
-	new_width = screen_sz.width / 2;
+	screen_rect->height -= new_y;
+	new_width = screen_rect->width / 2;
 	num_client--;
 	new_width /= num_client;
 	num_client = 0;
 
 	resize_tile(focused, 0, new_y,
-		    screen_sz.width / 2,
-		    screen_sz.height - new_y);
+		    screen_rect->width / 2,
+		    screen_rect->height - new_y);
 
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client;
@@ -236,10 +236,10 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 			continue;
 
 		if (resize_tile(client,
-				screen_sz.width / 2 + num_client * new_width,
+				screen_rect->width / 2 + num_client * new_width,
 				new_y,
 				new_width,
-				screen_sz.height)) {
+				screen_rect->height)) {
 			num_client++;
 		}
 	}
