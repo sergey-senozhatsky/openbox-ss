@@ -204,9 +204,11 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 
 static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 {
+	Options *o = opts;
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
+	int start_point = 0;
 	Rect *screen_rect = NULL;
 	ObClient *focused = NULL;
 
@@ -223,17 +225,25 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 				  client_monitor(focused),
 				  NULL);
 
-	new_width = screen_rect->width / 2;
-	num_client--;
-	new_width /= num_client;
+	if (o->flags & OPTS_FLAG_FOCUS) {
+		new_width = screen_rect->width / 2;
+
+		resize_tile(focused,
+			    screen_rect->x,
+			    screen_rect->y,
+			    new_width,
+			    screen_rect->height);
+
+		num_client--;
+		start_point = new_width;
+		new_width /= num_client;
+	} else {
+		new_width = screen_rect->width / num_client;
+		focused = NULL;
+		start_point = 0;
+	}
+
 	num_client = 0;
-
-	resize_tile(focused,
-		    screen_rect->x,
-		    screen_rect->y,
-		    screen_rect->width / 2,
-		    screen_rect->height);
-
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client = it->data;
 
@@ -241,7 +251,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 			continue;
 
 		if (resize_tile(client,
-				screen_rect->width / 2 + num_client * new_width,
+				start_point + num_client * new_width,
 				screen_rect->y,
 				new_width,
 				screen_rect->height)) {
