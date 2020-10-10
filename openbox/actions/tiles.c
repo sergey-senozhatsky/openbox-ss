@@ -33,8 +33,6 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data,
 
 void action_tiles_startup(void)
 {
-	actions_register("SplitTilesCols", setup_tiles_func,
-			free_func, run_split_tiles_cols_func);
 	actions_register("FocusTile", setup_tiles_func,
 			free_func, run_focus_tile_func);
 	actions_register("SplitTilesRows", setup_tiles_func,
@@ -201,57 +199,6 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 			current_row++;
 		}
 	}
-	return 0;
-}
-
-static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
-{
-	Options *o = opts;
-	GList *it;
-	int num_client = 0;
-	int new_width = 0;
-	Rect *screen_rect = NULL;
-	ObClient *focused = NULL;
-
-	num_client = enum_clients(&focused);
-	if (!focused)
-		return 0;
-
-	if (num_client < 2) {
-		client_maximize(focused, TRUE, 0);
-		return 0;
-	}
-
-	new_width = screen_rect->width / num_client;
-	screen_rect = screen_area(focused->desktop,
-				  client_monitor(focused),
-				  NULL);
-
-	if (o->flags & OPTS_FLAG_FOCUS) {
-		num_client = 1;
-
-		resize_tile(focused,
-			    screen_rect->x,
-			    screen_rect->y,
-			    new_width,
-			    screen_rect->height);
-	}
-
-	for (it = client_list; it; it = g_list_next(it)) {
-		ObClient *client = it->data;
-
-		if (client == focused)
-			continue;
-
-		if (resize_tile(client,
-				num_client * new_width,
-				screen_rect->y,
-				new_width,
-				screen_rect->height)) {
-			num_client++;
-		}
-	}
-
 	return 0;
 }
 
