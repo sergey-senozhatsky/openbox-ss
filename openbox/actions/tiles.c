@@ -6,8 +6,16 @@
 #include "openbox/debug.h"
 #include "openbox/openbox.h"
 
+enum {
+    CURRENT_MONITOR = -1,
+    ALL_MONITORS = -2,
+    NEXT_MONITOR = -3,
+    PREV_MONITOR = -4
+};
+
 typedef struct {
-	guint num_rows;
+	guint	num_rows;
+	gint	monitor;
 } Options;
 
 static void free_func(gpointer o);
@@ -40,6 +48,7 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 
 		o->num_rows = strtol(s, &s, 10);
 	}
+	o->monitor = CURRENT_MONITOR;
 	return o;
 }
 
@@ -50,7 +59,7 @@ static guint adjusted_height(ObClient *client, guint h)
 	return h - ob_rr_theme->title_height;
 }
 
-static guint enum_clients(ObClient **focused, guint *new_y)
+static guint enum_clients(ObClient **focused)
 {
 	GList *it;
 	guint cnt = 0;
@@ -65,16 +74,30 @@ static guint enum_clients(ObClient **focused, guint *new_y)
 			continue;
 		if (client->iconic)
 			continue;
-
-		if (client->area.y < *new_y)
-			*new_y = client->area.y;
-
 		if (client_focused(client))
 			*focused = client;
-
 		cnt++;
 	}
 	return cnt;
+}
+
+static ObClient *pick_first_client(void)
+{
+	GList *it;
+
+	for (it = client_list; it; it = g_list_next(it)) {
+		ObClient *client;
+
+		client = it->data;
+		if (client->desktop != screen_desktop)
+			continue;
+		if (client->obwin.type != OB_WINDOW_CLASS_CLIENT)
+			continue;
+		if (client->iconic)
+			continue;
+		return client;
+	}
+	return NULL;
 }
 
 static gboolean resize_tile(ObClient *client, guint x, guint y,
@@ -102,8 +125,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	int num_client = 0;
 	int new_width = 0;
 	int new_height = 0;
-	Rect *screen_rect = screen_physical_area_active();
-	int new_y = INT_MAX;
+	Rect *screen_rect = NULL;
 	ObClient *focused = NULL;
 	guint clients_per_row;
 	guint clients_last_row;
@@ -112,13 +134,19 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 	if (!o->num_rows)
 		return 0;
 
-	num_client = enum_clients(&focused, &new_y);
+	num_client = enum_clients(&focused);
+	if (!focused) {
+		focused = pick_first_client();
+		if (!focused)
+			return 0;
+	}
+
+	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
 	}
 
-	screen_rect->height -= new_y;
 	new_height = screen_rect->height / o->num_rows;
 	clients_per_row = num_client / o->num_rows;
 	if (!clients_per_row)
@@ -141,7 +169,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer options)
 		client = it->data;
 		if (!resize_tile(client,
 				num_client * new_width,
-				new_y + current_row * new_height,
+				screen_rect->y + current_row * new_height,
 				new_width,
 				new_height))
 			continue;
@@ -160,24 +188,28 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
-	Rect *screen_rect = screen_physical_area_active();
-	int new_y = INT_MAX;
+	Rect *screen_rect = NULL;
 	ObClient *focused = NULL;
 
-	num_client = enum_clients(&focused, &new_y);
+	num_client = enum_clients(&focused);
+	if (!focused) {
+		focused = pick_first_client();
+		if (!focused)
+			return 0;
+	}
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
 	}
 
-	screen_rect->height -= new_y;
 	new_width = screen_rect->width / num_client;
+	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	num_client = 0;
 	if (focused) {
 		resize_tile(focused,
-			    0, new_y,
+			    screen_rect->x, screen_rect->y,
 			    new_width,
-			    screen_rect->height - new_y);
+			    screen_rect->height);
 		num_client = 1;
 	}
 
@@ -190,7 +222,7 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 
 		if (resize_tile(client,
 				num_client * new_width,
-				new_y,
+				screen_rect->y,
 				new_width,
 				screen_rect->height)) {
 			num_client++;
@@ -205,28 +237,29 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 	GList *it;
 	int num_client = 0;
 	int new_width = 0;
-	Rect *screen_rect = screen_physical_area_active();
-	int new_y = INT_MAX;
+	Rect *screen_rect = NULL;
 	ObClient *focused = NULL;
 
-	num_client = enum_clients(&focused, &new_y);
-	if (!focused)
-		return 0;
-
+	num_client = enum_clients(&focused);
+	if (!focused) {
+		focused = pick_first_client();
+		if (!focused)
+			return 0;
+	}
+	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
 	if (num_client < 2) {
 		client_maximize(focused, TRUE, 0);
 		return 0;
 	}
 
-	screen_rect->height -= new_y;
 	new_width = screen_rect->width / 2;
 	num_client--;
 	new_width /= num_client;
 	num_client = 0;
 
-	resize_tile(focused, 0, new_y,
+	resize_tile(focused, screen_rect->x, screen_rect->y,
 		    screen_rect->width / 2,
-		    screen_rect->height - new_y);
+		    screen_rect->height);
 
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client;
@@ -237,7 +270,7 @@ static gboolean run_focus_tile_func(ObActionsData *data, gpointer options)
 
 		if (resize_tile(client,
 				screen_rect->width / 2 + num_client * new_width,
-				new_y,
+				screen_rect->y,
 				new_width,
 				screen_rect->height)) {
 			num_client++;
