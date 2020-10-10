@@ -194,15 +194,15 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer options)
 	}
 
 	new_width = screen_rect->width / num_client;
-	screen_rect = screen_area(focused->desktop, client_monitor(focused), NULL);
-	num_client = 0;
-	if (focused) {
-		resize_tile(focused,
-			    screen_rect->x, screen_rect->y,
-			    new_width,
-			    screen_rect->height);
-		num_client = 1;
-	}
+	screen_rect = screen_area(focused->desktop,
+				  client_monitor(focused),
+				  NULL);
+	num_client = 1;
+
+	resize_tile(focused,
+		    screen_rect->x, screen_rect->y,
+		    new_width,
+		    screen_rect->height);
 
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client;
