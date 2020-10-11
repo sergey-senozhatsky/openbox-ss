@@ -239,8 +239,14 @@ static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
 		new_width /= num_client;
 	} else {
 		new_width = screen_rect->width / num_client;
-		focused = NULL;
-		start_point = 0;
+
+		resize_tile(focused,
+			    screen_rect->x,
+			    screen_rect->y,
+			    new_width,
+			    screen_rect->height);
+
+		start_point = new_width;
 	}
 
 	num_client = 0;
