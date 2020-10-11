@@ -142,15 +142,22 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
 				  client_monitor(focused),
 				  NULL);
 
-	if (o->flags & OPTS_FLAG_MAXIMIZE_FOCUSED) {
+	if (num_client >= o->num_rows)
 		new_height = screen_rect->height / o->num_rows;
+	else
+		new_height = screen_rect->height / num_client;
+
+	if (o->flags & OPTS_FLAG_MAXIMIZE_FOCUSED) {
 		num_client--;
 		clients_per_row = num_client / (o->num_rows - 1);
 		if (!clients_per_row)
 			clients_per_row = 1;
 		clients_last_row = clients_per_row;
-		if (num_client % (o->num_rows - 1))
-			clients_last_row += 1;
+		if (num_client > (o->num_rows - 1) &&
+				num_client % (o->num_rows - 1)) {
+			clients_last_row += (num_client -
+					(o->num_rows - 1) * clients_per_row);
+		}
 
 		resize_tile(focused,
 			    screen_rect->x,
@@ -161,13 +168,14 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
 		current_row = 1;
 		num_client = 0;
 	} else {
-		new_height = screen_rect->height / o->num_rows;
 		clients_per_row = num_client / o->num_rows;
 		if (!clients_per_row)
 			clients_per_row = 1;
 		clients_last_row = clients_per_row;
-		if (num_client % o->num_rows)
-			clients_last_row += 1;
+		if (num_client > o->num_rows && num_client % o->num_rows) {
+			clients_last_row += (num_client -
+					o->num_rows * clients_per_row);
+		}
 
 		resize_tile(focused,
 			    screen_rect->x,
