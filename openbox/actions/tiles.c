@@ -24,19 +24,17 @@ typedef struct {
 
 static void free_func(gpointer o);
 static gpointer setup_tiles_func(xmlNodePtr node);
-static gboolean run_split_tiles_cols_func(ObActionsData *data,
-					  gpointer opts);
-static gboolean run_split_tiles_cols_func(ObActionsData *data,
-					  gpointer opts);
-static gboolean run_split_tiles_rows_func(ObActionsData *data,
+static gboolean run_split_tiles_horiz_func(ObActionsData *data,
+					   gpointer opts);
+static gboolean run_split_tiles_vert_func(ObActionsData *data,
 					  gpointer opts);
 
 void action_tiles_startup(void)
 {
-	actions_register("SplitTilesCols", setup_tiles_func,
-			free_func, run_split_tiles_cols_func);
-	actions_register("SplitTilesRows", setup_tiles_func,
-			free_func, run_split_tiles_rows_func);
+	actions_register("SplitTilesVert", setup_tiles_func,
+			free_func, run_split_tiles_vert_func);
+	actions_register("SplitTilesHoriz", setup_tiles_func,
+			free_func, run_split_tiles_horiz_func);
 }
 
 static gpointer setup_tiles_func(xmlNodePtr node)
@@ -115,7 +113,7 @@ static gboolean resize_tile(ObClient *client, guint x, guint y,
 	return 1;
 }
 
-static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
+static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
 {
 	Options *o = opts;
 	GList *it;
@@ -215,7 +213,7 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 	return 0;
 }
 
-static gboolean run_split_tiles_cols_func(ObActionsData *data, gpointer opts)
+static gboolean run_split_tiles_horiz_func(ObActionsData *data, gpointer opts)
 {
 	Options *o = opts;
 	GList *it;
