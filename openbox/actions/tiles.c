@@ -159,7 +159,9 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 			    screen_rect->y,
 			    screen_rect->width,
 			    new_height);
+
 		current_row = 1;
+		num_client = 0;
 	} else {
 		new_height = screen_rect->height / o->num_rows;
 		clients_per_row = num_client / o->num_rows;
@@ -168,11 +170,22 @@ static gboolean run_split_tiles_rows_func(ObActionsData *data, gpointer opts)
 		clients_last_row = clients_per_row;
 		if (num_client % o->num_rows)
 			clients_last_row += 1;
-		focused = NULL;
-		current_row = 0;
+
+		resize_tile(focused,
+			    screen_rect->x,
+			    screen_rect->y,
+			    screen_rect->width / clients_per_row,
+			    new_height);
+
+		if (clients_per_row == 1) {
+			current_row = 1;
+			num_client = 0;
+		} else {
+			current_row = 0;
+			num_client = 1;
+		}
 	}
 
-	num_client = 0;
 	for (it = client_list; it; it = g_list_next(it)) {
 		ObClient *client = it->data;
 
