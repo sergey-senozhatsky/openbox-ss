@@ -61,13 +61,6 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 	return o;
 }
 
-static guint adjusted_height(ObClient *client, guint h)
-{
-	if (client->undecorated)
-		return h;
-	return h - ob_rr_theme->title_height;
-}
-
 static guint enum_clients(ObClient **focused)
 {
 	ObClient *last;
@@ -95,7 +88,8 @@ static guint enum_clients(ObClient **focused)
 	return cnt;
 }
 
-static gboolean resize_tile(ObClient *client, guint x, guint y,
+static gboolean resize_tile(ObClient *client,
+			    guint x, guint y,
 			    guint w, guint h)
 {
 	if (client->desktop != screen_desktop)
@@ -105,7 +99,6 @@ static gboolean resize_tile(ObClient *client, guint x, guint y,
 	if (client->iconic)
 		return 0;
 
-	h = adjusted_height(client, h);
 	client_maximize(client, FALSE, 0);
 	client_maximize(client, FALSE, 2);
 	client_move_resize(client, x, y, w, h);
