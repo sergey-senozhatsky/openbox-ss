@@ -88,6 +88,19 @@ static guint enum_clients(ObClient **focused)
 	return cnt;
 }
 
+static void offset_client_dimensions(ObClient *client,
+				     guint *x, guint *y,
+				     guint *w, guint *h)
+{
+	if (client->undecorated) {
+		*w -= ob_rr_theme->fbwidth * 2;
+		*h += ob_rr_theme->fbwidth * 2;
+	} else {
+		*w -= ob_rr_theme->fbwidth * 2;
+		*h -= ob_rr_theme->title_height * 2;
+	}
+}
+
 static gboolean resize_tile(ObClient *client,
 			    guint x, guint y,
 			    guint w, guint h)
@@ -99,6 +112,7 @@ static gboolean resize_tile(ObClient *client,
 	if (client->iconic)
 		return 0;
 
+	offset_client_dimensions(client, &x, &y, &w, &h);
 	client_maximize(client, FALSE, 0);
 	client_maximize(client, FALSE, 2);
 	client_move_resize(client, x, y, w, h);
