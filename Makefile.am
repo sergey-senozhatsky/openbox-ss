@@ -175,6 +175,7 @@ openbox_openbox_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(LIBSN_CFLAGS) \
 	$(XML_CFLAGS) \
+	$(XSYNC_CFLAGS) \
 	-DLOCALEDIR=\"$(localedir)\" \
 	-DDATADIR=\"$(datadir)\" \
 	-DCONFIGDIR=\"$(configdir)\" \
@@ -190,6 +191,7 @@ openbox_openbox_LDADD = \
 	$(XML_LIBS) \
 	$(EFENCE_LIBS) \
 	$(LIBINTL) \
+	$(XSYNC_LIBS) \
 	obrender/libobrender.la \
 	obt/libobt.la
 openbox_openbox_LDFLAGS = -export-dynamic
