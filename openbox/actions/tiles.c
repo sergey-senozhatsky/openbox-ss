@@ -28,6 +28,8 @@ static gboolean run_split_tiles_horiz_func(ObActionsData *data,
 					   gpointer opts);
 static gboolean run_split_tiles_vert_func(ObActionsData *data,
 					  gpointer opts);
+static gboolean run_tile_reader_mode_func(ObActionsData *data,
+					  gpointer opts);
 
 void action_tiles_startup(void)
 {
@@ -35,6 +37,8 @@ void action_tiles_startup(void)
 			free_func, run_split_tiles_vert_func);
 	actions_register("SplitTilesHoriz", setup_tiles_func,
 			free_func, run_split_tiles_horiz_func);
+	actions_register("TileReaderMode", setup_tiles_func,
+			free_func, run_tile_reader_mode_func);
 }
 
 static gpointer setup_tiles_func(xmlNodePtr node)
@@ -113,6 +117,32 @@ static gboolean resize_tile(ObClient *client,
 	client_move_resize(client, x, y, w, h);
 
 	return 1;
+}
+
+static gboolean run_tile_reader_mode_func(ObActionsData *data, gpointer opts)
+{
+	Rect *screen_rect = NULL;
+	int num_client = 0;
+	ObClient *focused = NULL;
+
+	num_client = enum_clients(&focused);
+	if (!focused)
+		return 0;
+
+	if (num_client != 1)
+		return 0;
+
+	screen_rect = screen_area(focused->desktop,
+				  client_monitor(focused),
+				  NULL);
+
+	resize_tile(focused,
+		    screen_rect->x + screen_rect->width / 4,
+		    screen_rect->y,
+		    screen_rect->width / 2,
+		    screen_rect->height);
+
+	return 0;
 }
 
 static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
