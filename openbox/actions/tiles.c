@@ -96,8 +96,7 @@ static void offset_client_dimensions(ObClient *client,
 				     guint *x, guint *y,
 				     guint *w, guint *h)
 {
-	*w -= ob_rr_theme->fbwidth * 2;
-	*h += ob_rr_theme->fbwidth * 2;
+	*x += 1;
 }
 
 static gboolean resize_tile(ObClient *client,
