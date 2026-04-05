@@ -327,6 +327,8 @@ static gboolean get_text_property(Window win, Atom prop,
     Otherwise, this returns a gchar** of no more than max strings (or all
     strings read, if max is negative). If an error occurs, NULL is returned.
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-local-addr"
 static void* convert_text_property(XTextProperty *tprop,
                                    ObtPropTextType type, gint max)
 {
@@ -338,8 +340,8 @@ static void* convert_text_property(XTextProperty *tprop,
     const gboolean return_single = (max == 1);
     gboolean ok = FALSE;
     gchar **strlist = NULL;
-    gchar *single[1] = { NULL };
-    gchar **retlist = single; /* single is used when max == 1 */
+    gchar *single_str = NULL;
+    gchar **retlist = return_single ? &single_str : NULL;
     gint i, n_strs;
 
     /* Read each string in the text property and store a pointer to it in
@@ -465,10 +467,11 @@ static void* convert_text_property(XTextProperty *tprop,
 
     if (strlist) XFreeStringList(strlist);
     if (return_single)
-        return retlist[0];
+        return single_str;
     else
         return retlist;
 }
+#pragma GCC diagnostic pop
 
 gboolean obt_prop_get32(Window win, Atom prop, Atom type, guint32 *ret)
 {
