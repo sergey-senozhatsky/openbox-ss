@@ -87,6 +87,7 @@ static guint enum_clients(ObClient **focused)
 	return cnt;
 }
 
+/* Nudge tile position to avoid overlapping window borders */
 static void offset_client_dimensions(ObClient *client,
 				     guint *x, guint *y,
 				     guint *w, guint *h)
@@ -152,7 +153,7 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
 	guint clients_last_row;
 	guint current_row;
 
-	if (!o->num_rows || o->num_rows < 2)
+	if (o->num_rows < 2)
 		return 0;
 
 	num_client = enum_clients(&focused);
