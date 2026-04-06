@@ -87,14 +87,6 @@ static guint enum_clients(ObClient **focused)
 	return cnt;
 }
 
-/* Nudge tile position to avoid overlapping window borders */
-static void offset_client_dimensions(ObClient *client,
-				     guint *x, guint *y,
-				     guint *w, guint *h)
-{
-	*x += 1;
-}
-
 static gboolean resize_tile(ObClient *client,
 			    guint x, guint y,
 			    guint w, guint h)
@@ -106,7 +98,6 @@ static gboolean resize_tile(ObClient *client,
 	if (client->iconic)
 		return 0;
 
-	offset_client_dimensions(client, &x, &y, &w, &h);
 	client_maximize(client, FALSE, 0);
 	client_move_resize(client, x, y, w, h);
 
