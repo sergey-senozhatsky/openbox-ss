@@ -50,16 +50,11 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 	o->flags = OPTS_FLAG_NONE;
 	o->monitor = CURRENT_MONITOR;
 
-	if ((n = obt_xml_find_node(node, "rows"))) {
-		gchar *s = obt_xml_node_string(n);
-
-		o->num_rows = strtol(s, &s, 10);
-	}
+	if ((n = obt_xml_find_node(node, "rows")))
+		o->num_rows = obt_xml_node_int(n);
 
 	if ((n = obt_xml_find_node(node, "maximize_focused"))) {
-		gchar *s = obt_xml_node_string(n);
-
-		if (strcmp(s, "true") == 0)
+		if (obt_xml_node_bool(n))
 			o->flags |= OPTS_FLAG_MAXIMIZE_FOCUSED;
 	}
 	return o;
@@ -141,6 +136,7 @@ static gboolean run_tile_reader_mode_func(ObActionsData *data, gpointer opts)
 		    screen_rect->width / 2,
 		    screen_rect->height);
 
+	g_slice_free(Rect, screen_rect);
 	return 0;
 }
 
@@ -249,6 +245,7 @@ static gboolean run_split_tiles_vert_func(ObActionsData *data, gpointer opts)
 			current_row++;
 		}
 	}
+	g_slice_free(Rect, screen_rect);
 	return 0;
 }
 
@@ -315,6 +312,7 @@ static gboolean run_split_tiles_horiz_func(ObActionsData *data, gpointer opts)
 		}
 	}
 
+	g_slice_free(Rect, screen_rect);
 	return 0;
 }
 
