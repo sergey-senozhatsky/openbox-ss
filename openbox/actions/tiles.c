@@ -62,7 +62,7 @@ static gpointer setup_tiles_func(xmlNodePtr node)
 
 static guint enum_clients(ObClient **focused)
 {
-	ObClient *last;
+	ObClient *last = NULL;
 	GList *it;
 	guint cnt = 0;
 
@@ -107,7 +107,6 @@ static gboolean resize_tile(ObClient *client,
 
 	offset_client_dimensions(client, &x, &y, &w, &h);
 	client_maximize(client, FALSE, 0);
-	client_maximize(client, FALSE, 2);
 	client_move_resize(client, x, y, w, h);
 
 	return 1;
